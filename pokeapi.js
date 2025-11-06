@@ -29,10 +29,49 @@ async function fetchPokemon(idOrName) {
     }
 
     const data = await response.json();
+
+    // Fetch move details for the first 4 moves
+    const movesWithDetails = await fetchMoveDetails(data.moves.slice(0, 4));
+    data.movesWithDetails = movesWithDetails;
+
     return data;
   } catch (error) {
     console.error(`Error fetching Pokémon ${idOrName}:`, error);
     return null;
+  }
+}
+
+/**
+ * Fetch detailed information for moves
+ * @param {Array} moves - Array of move objects from Pokemon data
+ * @returns {Promise<Array>} Array of move details
+ */
+async function fetchMoveDetails(moves) {
+  try {
+    const movePromises = moves.map(async (moveData) => {
+      try {
+        const response = await fetch(moveData.move.url);
+        if (!response.ok) return null;
+        const data = await response.json();
+        return {
+          name: data.name,
+          power: data.power || 40,
+          accuracy: data.accuracy || 100,
+          pp: data.pp || 10,
+          type: data.type.name,
+          damageClass: data.damage_class.name,
+          effect: data.effect_entries[0]?.short_effect || "Deals damage",
+        };
+      } catch (error) {
+        return null;
+      }
+    });
+
+    const results = await Promise.all(movePromises);
+    return results.filter((move) => move !== null).slice(0, 4);
+  } catch (error) {
+    console.error("Error fetching move details:", error);
+    return [];
   }
 }
 
@@ -164,20 +203,139 @@ function getPokemonSprite(pokemon, front = true) {
  * @returns {number} Damage multiplier
  */
 function getTypeEffectiveness(attackType, defenderTypes) {
-  // Simplified type chart (can be expanded)
+  // Complete type chart based on Pokemon games
   const typeChart = {
-    fire: { grass: 2, water: 0.5, fire: 0.5 },
-    water: { fire: 2, grass: 0.5, water: 0.5 },
-    grass: { water: 2, fire: 0.5, grass: 0.5 },
-    electric: { water: 2, grass: 0.5, electric: 0.5 },
-    normal: {},
+    normal: { rock: 0.5, ghost: 0, steel: 0.5 },
+    fire: {
+      fire: 0.5,
+      water: 0.5,
+      grass: 2,
+      ice: 2,
+      bug: 2,
+      rock: 0.5,
+      dragon: 0.5,
+      steel: 2,
+    },
+    water: { fire: 2, water: 0.5, grass: 0.5, ground: 2, rock: 2, dragon: 0.5 },
+    grass: {
+      fire: 0.5,
+      water: 2,
+      grass: 0.5,
+      poison: 0.5,
+      ground: 2,
+      flying: 0.5,
+      bug: 0.5,
+      rock: 2,
+      dragon: 0.5,
+      steel: 0.5,
+    },
+    electric: {
+      water: 2,
+      electric: 0.5,
+      grass: 0.5,
+      ground: 0,
+      flying: 2,
+      dragon: 0.5,
+    },
+    ice: {
+      fire: 0.5,
+      water: 0.5,
+      grass: 2,
+      ice: 0.5,
+      ground: 2,
+      flying: 2,
+      dragon: 2,
+      steel: 0.5,
+    },
+    fighting: {
+      normal: 2,
+      ice: 2,
+      poison: 0.5,
+      flying: 0.5,
+      psychic: 0.5,
+      bug: 0.5,
+      rock: 2,
+      ghost: 0,
+      dark: 2,
+      steel: 2,
+      fairy: 0.5,
+    },
+    poison: {
+      grass: 2,
+      poison: 0.5,
+      ground: 0.5,
+      rock: 0.5,
+      ghost: 0.5,
+      steel: 0,
+      fairy: 2,
+    },
+    ground: {
+      fire: 2,
+      electric: 2,
+      grass: 0.5,
+      poison: 2,
+      flying: 0,
+      bug: 0.5,
+      rock: 2,
+      steel: 2,
+    },
+    flying: {
+      electric: 0.5,
+      grass: 2,
+      fighting: 2,
+      bug: 2,
+      rock: 0.5,
+      steel: 0.5,
+    },
+    psychic: { fighting: 2, poison: 2, psychic: 0.5, dark: 0, steel: 0.5 },
+    bug: {
+      fire: 0.5,
+      grass: 2,
+      fighting: 0.5,
+      poison: 0.5,
+      flying: 0.5,
+      psychic: 2,
+      ghost: 0.5,
+      dark: 2,
+      steel: 0.5,
+      fairy: 0.5,
+    },
+    rock: {
+      fire: 2,
+      ice: 2,
+      fighting: 0.5,
+      ground: 0.5,
+      flying: 2,
+      bug: 2,
+      steel: 0.5,
+    },
+    ghost: { normal: 0, psychic: 2, ghost: 2, dark: 0.5 },
+    dragon: { dragon: 2, steel: 0.5, fairy: 0 },
+    dark: { fighting: 0.5, psychic: 2, ghost: 2, dark: 0.5, fairy: 0.5 },
+    steel: {
+      fire: 0.5,
+      water: 0.5,
+      electric: 0.5,
+      ice: 2,
+      rock: 2,
+      steel: 0.5,
+      fairy: 2,
+    },
+    fairy: {
+      fire: 0.5,
+      fighting: 2,
+      poison: 0.5,
+      dragon: 2,
+      dark: 2,
+      steel: 0.5,
+    },
   };
 
   let multiplier = 1;
 
   if (typeChart[attackType]) {
     defenderTypes.forEach((defType) => {
-      if (typeChart[attackType][defType]) {
+      if (typeChart[attackType][defType] !== undefined) {
         multiplier *= typeChart[attackType][defType];
       }
     });

@@ -71,9 +71,12 @@
           <div class="battle-arena hidden" id="battleArena">
             <h2>Round <span id="roundNumber">1</span></h2>
             <div class="battle-field">
-              <div class="battle-pokemon">
+              <div class="battle-pokemon player-side">
                 <h3 id="playerName">Your Pokémon</h3>
-                <img id="playerSprite" src="" alt="Your Pokémon" />
+                <div class="pokemon-sprite-container">
+                  <img id="playerSprite" src="" alt="Your Pokémon" />
+                  <div class="attack-animation" id="playerAttackAnim"></div>
+                </div>
                 <div class="health-bar">
                   <div
                     class="health-fill"
@@ -84,10 +87,14 @@
                   </div>
                 </div>
                 <div id="playerTypes"></div>
+                <div id="playerLevel" class="level-badge">Lv. 5</div>
               </div>
-              <div class="battle-pokemon">
+              <div class="battle-pokemon opponent-side">
                 <h3 id="opponentName">Opponent</h3>
-                <img id="opponentSprite" src="" alt="Opponent" />
+                <div class="pokemon-sprite-container">
+                  <img id="opponentSprite" src="" alt="Opponent" />
+                  <div class="attack-animation" id="opponentAttackAnim"></div>
+                </div>
                 <div class="health-bar">
                   <div
                     class="health-fill"
@@ -98,10 +105,11 @@
                   </div>
                 </div>
                 <div id="opponentTypes"></div>
+                <div id="opponentLevel" class="level-badge">Lv. 5</div>
               </div>
             </div>
             <div class="battle-actions" id="battleActions">
-              <button class="btn btn-danger" id="attackBtn">⚔️ Attack</button>
+              <div class="moves-grid" id="movesGrid"></div>
               <button class="btn btn-secondary" id="runBtn">🏃 Run</button>
             </div>
             <div class="battle-log" id="battleLog"></div>

@@ -66,11 +66,6 @@ function setupEventListeners() {
     startBattleBtn.addEventListener("click", startBattle);
   }
 
-  const attackBtn = document.getElementById("attackBtn");
-  if (attackBtn) {
-    attackBtn.addEventListener("click", performAttack);
-  }
-
   const runBtn = document.getElementById("runBtn");
   if (runBtn) {
     runBtn.addEventListener("click", runFromBattle);
@@ -258,6 +253,7 @@ function updateBattleDisplay() {
   // Update player display
   document.getElementById("playerName").textContent = player.name.toUpperCase();
   document.getElementById("playerSprite").src = getPokemonSprite(player);
+  document.getElementById("playerLevel").textContent = `Lv. ${player.level}`;
 
   const playerHpPercent = Math.max(0, (player.currentHp / player.maxHp) * 100);
   const playerHealthBar = document.getElementById("playerHealth");
@@ -278,6 +274,9 @@ function updateBattleDisplay() {
   document.getElementById("opponentName").textContent =
     opponent.name.toUpperCase();
   document.getElementById("opponentSprite").src = getPokemonSprite(opponent);
+  document.getElementById(
+    "opponentLevel"
+  ).textContent = `Lv. ${opponent.level}`;
 
   const opponentHpPercent = Math.max(
     0,
@@ -297,6 +296,9 @@ function updateBattleDisplay() {
     )
     .join("");
   document.getElementById("opponentTypes").innerHTML = opponentTypes;
+
+  // Display player's moves
+  displayMoves(player);
 }
 
 /**
@@ -319,95 +321,328 @@ function addBattleLog(message) {
 }
 
 /**
- * Calculate damage for an attack
- * @param {Object} attacker - Attacking Pokémon
- * @param {Object} defender - Defending Pokémon
- * @returns {number} Damage amount
+ * Display moves for player to select
+ * @param {Object} pokemon - Player's Pokemon
  */
-function calculateDamage(attacker, defender) {
-  const attackStat = attacker.stats[1].base_stat;
-  const defenseStat = defender.stats[2].base_stat;
-  const levelModifier = attacker.level || 5;
+function displayMoves(pokemon) {
+  const movesGrid = document.getElementById("movesGrid");
+  movesGrid.innerHTML = "";
 
-  // Basic damage formula inspired by Pokémon games
-  const baseDamage =
-    (((2 * levelModifier) / 5 + 2) * attackStat) / defenseStat / 50 + 2;
-  const randomFactor = Math.random() * 0.15 + 0.85; // 85-100% damage
+  const moves = pokemon.movesWithDetails || [];
 
-  return Math.max(5, Math.floor(baseDamage * randomFactor));
+  if (moves.length === 0) {
+    // Fallback to basic tackle if no moves
+    moves.push({
+      name: "tackle",
+      power: 40,
+      accuracy: 100,
+      pp: 35,
+      type: "normal",
+      damageClass: "physical",
+    });
+  }
+
+  moves.forEach((move) => {
+    const moveBtn = document.createElement("button");
+    moveBtn.className = `btn move-btn type-${move.type}`;
+    moveBtn.innerHTML = `
+      <div class="move-name">${move.name.replace("-", " ").toUpperCase()}</div>
+      <div class="move-details">
+        <span class="type-badge type-${move.type}">${move.type}</span>
+        <span>PWR: ${move.power || "--"}</span>
+        <span>ACC: ${move.accuracy || "--"}%</span>
+      </div>
+    `;
+    moveBtn.onclick = () => performAttack(move);
+    movesGrid.appendChild(moveBtn);
+  });
+}
+
+// ==================== BATTLE ANIMATIONS ====================
+
+/**
+ * Play attack animation
+ * @param {string} side - 'player' or 'opponent'
+ * @param {string} moveType - Type of the move
+ * @param {string} damageClass - 'physical' or 'special'
+ */
+async function playAttackAnimation(side, moveType, damageClass) {
+  const sprite = document.getElementById(`${side}Sprite`);
+  const animContainer = document.getElementById(`${side}AttackAnim`);
+  const isPlayer = side === "player";
+
+  // Sprite animation
+  sprite.classList.add(
+    damageClass === "physical" ? "attack-physical" : "attack-special"
+  );
+
+  // Create attack effect
+  const effect = document.createElement("div");
+  effect.className = `attack-effect ${moveType}-effect ${
+    isPlayer ? "from-player" : "from-opponent"
+  }`;
+  animContainer.appendChild(effect);
+
+  await sleep(600);
+
+  sprite.classList.remove("attack-physical", "attack-special");
+  animContainer.innerHTML = "";
 }
 
 /**
- * Perform attack action
+ * Play damage animation on target
+ * @param {string} side - 'player' or 'opponent'
  */
-async function performAttack() {
+async function playDamageAnimation(side) {
+  const sprite = document.getElementById(`${side}Sprite`);
+  sprite.classList.add("hit");
+
+  await sleep(300);
+
+  sprite.classList.remove("hit");
+}
+
+/**
+ * Calculate damage for an attack
+ * @param {Object} attacker - Attacking Pokémon
+ * @param {Object} defender - Defending Pokémon
+ * @param {Object} move - Move being used
+ * @returns {Object} Damage info including amount and effectiveness
+ */
+function calculateDamage(attacker, defender, move) {
+  const level = attacker.level || 5;
+  const power = move.power || 40;
+  const attackStat =
+    move.damageClass === "physical"
+      ? attacker.stats[1].base_stat
+      : attacker.stats[3].base_stat; // Special Attack
+  const defenseStat =
+    move.damageClass === "physical"
+      ? defender.stats[2].base_stat
+      : defender.stats[4].base_stat; // Special Defense
+
+  // Type effectiveness
+  const defenderTypes = defender.types.map((t) => t.type.name);
+  const effectiveness = getTypeEffectiveness(move.type, defenderTypes);
+
+  // STAB (Same Type Attack Bonus)
+  const attackerTypes = attacker.types.map((t) => t.type.name);
+  const stab = attackerTypes.includes(move.type) ? 1.5 : 1;
+
+  // Damage formula from Pokemon games
+  const baseDamage =
+    (((2 * level) / 5 + 2) * power * (attackStat / defenseStat)) / 50 + 2;
+  const randomFactor = Math.random() * 0.15 + 0.85; // 85-100%
+
+  const finalDamage = Math.max(
+    1,
+    Math.floor(baseDamage * stab * effectiveness * randomFactor)
+  );
+
+  return {
+    damage: finalDamage,
+    effectiveness: effectiveness,
+    critical: Math.random() < 0.0625, // 1/16 chance
+  };
+}
+
+/**
+ * Perform attack action with selected move
+ * @param {Object} move - Move to use
+ */
+async function performAttack(move) {
   const battle = gameState.currentBattle;
   const player = gameState.playerPokemon;
   const opponent = battle.opponent;
 
-  // Disable buttons during attack sequence
-  document.getElementById("attackBtn").disabled = true;
+  // Disable move buttons during attack sequence
+  document
+    .querySelectorAll(".move-btn")
+    .forEach((btn) => (btn.disabled = true));
   document.getElementById("runBtn").disabled = true;
 
-  // Player attacks first (can be modified based on speed stat)
-  const playerDamage = calculateDamage(player, opponent);
-  opponent.currentHp -= playerDamage;
+  // Determine turn order based on speed
+  const playerSpeed = player.stats[5].base_stat;
+  const opponentSpeed = opponent.stats[5].base_stat;
+  const playerFirst = playerSpeed >= opponentSpeed;
 
-  addBattleLog(
-    `💥 ${player.name.toUpperCase()} attacks for ${playerDamage} damage!`
-  );
-  updateBattleDisplay();
-
-  await sleep(1000);
-
-  // Check if opponent fainted
-  if (opponent.currentHp <= 0) {
-    addBattleLog(`✨ ${opponent.name.toUpperCase()} fainted!`);
-    battle.defeatedOpponents++;
-    gameState.wins++;
-
-    await sleep(1500);
-
-    // Check if more opponents remain
-    if (battle.currentRound < battle.totalOpponents) {
-      addBattleLog(`🔄 Preparing next opponent...`);
-      battle.currentRound++;
-
-      await sleep(1000);
-
-      // Load next opponent
-      await startBattle();
-    } else {
-      // Battle complete - player wins
-      await endBattle(true);
+  if (playerFirst) {
+    await executePlayerTurn(move);
+    if (opponent.currentHp > 0) {
+      await sleep(500);
+      await executeOpponentTurn();
     }
-    return;
+  } else {
+    await executeOpponentTurn();
+    if (player.currentHp > 0) {
+      await sleep(500);
+      await executePlayerTurn(move);
+    }
   }
 
-  // Opponent's turn to attack
-  const opponentDamage = calculateDamage(opponent, player);
-  player.currentHp -= opponentDamage;
+  // Check battle end conditions
+  if (opponent.currentHp <= 0) {
+    await handleOpponentDefeated();
+  } else if (player.currentHp <= 0) {
+    await handlePlayerDefeated();
+  } else {
+    // Re-enable buttons for next turn
+    document
+      .querySelectorAll(".move-btn")
+      .forEach((btn) => (btn.disabled = false));
+    document.getElementById("runBtn").disabled = false;
+  }
+}
+
+/**
+ * Execute player's turn
+ * @param {Object} move - Move to use
+ */
+async function executePlayerTurn(move) {
+  const battle = gameState.currentBattle;
+  const player = gameState.playerPokemon;
+  const opponent = battle.opponent;
 
   addBattleLog(
-    `💢 ${opponent.name.toUpperCase()} counterattacks for ${opponentDamage} damage!`
+    `${player.name.toUpperCase()} used ${move.name
+      .replace("-", " ")
+      .toUpperCase()}!`
   );
-  updateBattleDisplay();
 
-  await sleep(1000);
+  // Play attack animation
+  await playAttackAnimation("player", move.type, move.damageClass);
+  await sleep(200);
 
-  // Check if player fainted
-  if (player.currentHp <= 0) {
-    addBattleLog(`💀 ${player.name.toUpperCase()} fainted!`);
-    gameState.losses++;
+  // Calculate and apply damage
+  const damageInfo = calculateDamage(player, opponent, move);
 
-    await sleep(1500);
-    await endBattle(false);
+  if (Math.random() * 100 > move.accuracy) {
+    addBattleLog(`The attack missed!`);
     return;
   }
 
-  // Re-enable buttons for next turn
-  document.getElementById("attackBtn").disabled = false;
-  document.getElementById("runBtn").disabled = false;
+  const finalDamage = damageInfo.critical
+    ? damageInfo.damage * 1.5
+    : damageInfo.damage;
+  opponent.currentHp -= finalDamage;
+
+  await playDamageAnimation("opponent");
+  updateBattleDisplay();
+
+  // Log effectiveness
+  if (damageInfo.critical) {
+    addBattleLog(`💥 A critical hit!`);
+  }
+  if (damageInfo.effectiveness > 1) {
+    addBattleLog(`✨ It's super effective!`);
+  } else if (damageInfo.effectiveness < 1 && damageInfo.effectiveness > 0) {
+    addBattleLog(`It's not very effective...`);
+  } else if (damageInfo.effectiveness === 0) {
+    addBattleLog(`It doesn't affect ${opponent.name.toUpperCase()}...`);
+  }
+
+  addBattleLog(`Dealt ${Math.floor(finalDamage)} damage!`);
+}
+
+/**
+ * Execute opponent's turn
+ */
+async function executeOpponentTurn() {
+  const battle = gameState.currentBattle;
+  const player = gameState.playerPokemon;
+  const opponent = battle.opponent;
+
+  // Select random move from opponent
+  const opponentMoves = opponent.movesWithDetails || [
+    {
+      name: "tackle",
+      power: 40,
+      accuracy: 100,
+      type: "normal",
+      damageClass: "physical",
+    },
+  ];
+
+  const move = opponentMoves[Math.floor(Math.random() * opponentMoves.length)];
+
+  addBattleLog(
+    `${opponent.name.toUpperCase()} used ${move.name
+      .replace("-", " ")
+      .toUpperCase()}!`
+  );
+
+  // Play attack animation
+  await playAttackAnimation("opponent", move.type, move.damageClass);
+  await sleep(200);
+
+  // Calculate and apply damage
+  const damageInfo = calculateDamage(opponent, player, move);
+
+  if (Math.random() * 100 > move.accuracy) {
+    addBattleLog(`The attack missed!`);
+    return;
+  }
+
+  const finalDamage = damageInfo.critical
+    ? damageInfo.damage * 1.5
+    : damageInfo.damage;
+  player.currentHp -= finalDamage;
+
+  await playDamageAnimation("player");
+  updateBattleDisplay();
+
+  // Log effectiveness
+  if (damageInfo.critical) {
+    addBattleLog(`💥 A critical hit!`);
+  }
+  if (damageInfo.effectiveness > 1) {
+    addBattleLog(`✨ It's super effective!`);
+  } else if (damageInfo.effectiveness < 1 && damageInfo.effectiveness > 0) {
+    addBattleLog(`It's not very effective...`);
+  }
+
+  addBattleLog(`Took ${Math.floor(finalDamage)} damage!`);
+}
+
+/**
+ * Handle opponent defeated
+ */
+async function handleOpponentDefeated() {
+  const battle = gameState.currentBattle;
+  const opponent = battle.opponent;
+
+  addBattleLog(`✨ ${opponent.name.toUpperCase()} fainted!`);
+  battle.defeatedOpponents++;
+  gameState.wins++;
+
+  await sleep(1500);
+
+  // Check if more opponents remain
+  if (battle.currentRound < battle.totalOpponents) {
+    addBattleLog(`🔄 Preparing next opponent...`);
+    battle.currentRound++;
+
+    await sleep(1000);
+
+    // Load next opponent
+    await startBattle();
+  } else {
+    // Battle complete - player wins
+    await endBattle(true);
+  }
+}
+
+/**
+ * Handle player defeated
+ */
+async function handlePlayerDefeated() {
+  const player = gameState.playerPokemon;
+
+  addBattleLog(`💀 ${player.name.toUpperCase()} fainted!`);
+  gameState.losses++;
+
+  await sleep(1500);
+  await endBattle(false);
 }
 
 /**
