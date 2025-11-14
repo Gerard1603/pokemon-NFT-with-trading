@@ -1,3 +1,5 @@
+/* ==================== GLOBAL STYLES ==================== */
+
 * {
   margin: 0;
   padding: 0;
@@ -675,6 +677,36 @@ body::before {
 
 /* ==================== MARKETPLACE ==================== */
 
+.marketplace-filters {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 10px 20px;
+  background: var(--card-bg);
+  border: 2px solid rgba(255, 222, 0, 0.3);
+  border-radius: 25px;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.filter-btn:hover {
+  border-color: var(--primary-yellow);
+  transform: translateY(-2px);
+}
+
+.filter-btn.active {
+  background: var(--primary-yellow);
+  color: var(--text-dark);
+  border-color: var(--primary-yellow);
+}
+
 .marketplace-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -1162,6 +1194,77 @@ body::before {
   pointer-events: none;
 }
 
+/* ==================== SETTINGS STYLES ==================== */
+
+.settings-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.setting-group {
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+  border: 2px solid rgba(255, 222, 0, 0.2);
+}
+
+.setting-group h3 {
+  margin-bottom: 20px;
+  color: var(--primary-yellow);
+  font-size: 1.3rem;
+}
+
+.audio-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.audio-controls label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.volume-control {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.volume-control label {
+  min-width: 80px;
+}
+
+#volumeSlider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+
+#volumeSlider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary-yellow);
+  cursor: pointer;
+}
+
+#volumeSlider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--primary-yellow);
+  cursor: pointer;
+  border: none;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .landing-content {
@@ -1174,5 +1277,14 @@ body::before {
 
   .landing-header h1 {
     font-size: 2.5rem;
+  }
+
+  .volume-control {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .volume-control label {
+    min-width: auto;
   }
 }

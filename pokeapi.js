@@ -419,6 +419,26 @@ function isLegendaryPokemon(pokemonId) {
   return legendaryIds.includes(pokemonId);
 }
 
+function getPokemonRarity(pokemon) {
+  // Check if legendary first
+  if (isLegendaryPokemon(pokemon.id)) {
+    // Mew is mythical, others are legendary
+    return pokemon.id === 151 ? "mythical" : "legendary";
+  }
+
+  // Calculate total base stats
+  const totalStats = pokemon.stats.reduce(
+    (sum, stat) => sum + stat.base_stat,
+    0
+  );
+
+  // Rarity thresholds based on Gen 1 stats
+  if (totalStats >= 600) return "ultra-beast"; // Very high stats (like Mewtwo)
+  if (totalStats >= 500) return "very-rare"; // High stats
+  if (totalStats >= 400) return "uncommon"; // Above average
+  return "common"; // Below average
+}
+
 /**
  * Fetch Pokemon species data (contains evolution chain URL)
  */
@@ -429,7 +449,9 @@ async function fetchPokemonSpecies(pokemonId) {
       return __SPECIES_CACHE.get(key);
     }
 
-    const response = await fetch(`${POKEAPI_BASE}/pokemon-species/${pokemonId}`);
+    const response = await fetch(
+      `${POKEAPI_BASE}/pokemon-species/${pokemonId}`
+    );
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -462,7 +484,9 @@ async function getNextEvolution(pokemonId) {
 
     // Find current Pokemon in chain
     function findPokemonInChain(chain, targetId) {
-      if (parseInt(chain.species.url.split('/').slice(-2, -1)[0]) === targetId) {
+      if (
+        parseInt(chain.species.url.split("/").slice(-2, -1)[0]) === targetId
+      ) {
         return chain;
       }
       for (const evolvesTo of chain.evolves_to || []) {
@@ -480,11 +504,15 @@ async function getNextEvolution(pokemonId) {
 
     // Get first evolution (most Pokemon only have one)
     const nextEvolution = currentChain.evolves_to[0];
-    const nextEvolutionId = parseInt(nextEvolution.species.url.split('/').slice(-2, -1)[0]);
-    
+    const nextEvolutionId = parseInt(
+      nextEvolution.species.url.split("/").slice(-2, -1)[0]
+    );
+
     // Check evolution trigger (level-up is most common)
-    const minLevel = nextEvolution.evolution_details.find(d => d.min_level)?.min_level || null;
-    
+    const minLevel =
+      nextEvolution.evolution_details.find((d) => d.min_level)?.min_level ||
+      null;
+
     const result = minLevel ? { nextEvolutionId, minLevel } : null;
     __EVOLUTION_CACHE.set(key, result);
     return result;
@@ -503,14 +531,17 @@ async function getMovesByLevel(pokemonId) {
     if (!pokemon || !pokemon.moves) return [];
 
     const movesWithLevels = [];
-    
+
     for (const moveData of pokemon.moves) {
       // Check version group details for level learned
       for (const versionGroup of moveData.version_group_details || []) {
-        if (versionGroup.move_learn_method.name === 'level-up' && versionGroup.level_learned_at) {
+        if (
+          versionGroup.move_learn_method.name === "level-up" &&
+          versionGroup.level_learned_at
+        ) {
           const moveUrl = moveData.move.url;
           let moveDetails = __MOVE_CACHE.get(moveUrl);
-          
+
           if (!moveDetails) {
             try {
               const response = await fetch(moveUrl);
@@ -523,11 +554,13 @@ async function getMovesByLevel(pokemonId) {
                   pp: data.pp || 10,
                   type: data.type.name,
                   damageClass: data.damage_class.name,
-                  effect: data.effect_entries[0]?.short_effect || "Deals damage",
+                  effect:
+                    data.effect_entries[0]?.short_effect || "Deals damage",
                   // Check for status effects
-                  statusEffect: data.effect_chances && data.effect_chances[0] > 0 
-                    ? data.meta?.ailment?.name || null 
-                    : null,
+                  statusEffect:
+                    data.effect_chances && data.effect_chances[0] > 0
+                      ? data.meta?.ailment?.name || null
+                      : null,
                   statusChance: data.effect_chances?.[0] || 0,
                 };
                 __MOVE_CACHE.set(moveUrl, moveDetails);
@@ -536,7 +569,7 @@ async function getMovesByLevel(pokemonId) {
               console.error(`Error fetching move ${moveUrl}:`, e);
             }
           }
-          
+
           if (moveDetails) {
             movesWithLevels.push({
               ...moveDetails,
@@ -561,6 +594,7 @@ window.fetchMultiplePokemon = fetchMultiplePokemon;
 window.getPokemonSprite = getPokemonSprite;
 window.getRandomPokemonIds = getRandomPokemonIds;
 window.isLegendaryPokemon = isLegendaryPokemon;
+window.getPokemonRarity = getPokemonRarity;
 window.loadStarterPokemon = loadStarterPokemon;
 window.getTypeEffectiveness = getTypeEffectiveness;
 window.formatPokemonName = formatPokemonName;

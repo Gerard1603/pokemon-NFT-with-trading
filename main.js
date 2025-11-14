@@ -20,7 +20,8 @@ const gameState = {
   },
   xp: 0,
   level: 1,
-  currency: 1000,
+  currency: 1000, // PokéCoins (₽) for Pokémon purchases
+  battlePoints: 0, // Battle Points (BP) for consumable items
   dailyQuests: [],
   lastPlayed: null,
   playerInventory: { potions: 0, superPotions: 0, revives: 0, pokeballs: 0 },
@@ -67,7 +68,7 @@ const ITEM_CONFIG = {
   potion: {
     name: "Potion",
     key: "potion",
-    price: 200,
+    price: 50,
     effect: "Restores 20 HP",
     icon: "💊",
     type: "healing",
@@ -75,7 +76,7 @@ const ITEM_CONFIG = {
   superPotion: {
     name: "Super Potion",
     key: "superPotion",
-    price: 500,
+    price: 120,
     effect: "Restores 50 HP",
     icon: "🧪",
     type: "healing",
@@ -83,7 +84,7 @@ const ITEM_CONFIG = {
   revive: {
     name: "Revive",
     key: "revive",
-    price: 1000,
+    price: 200,
     effect: "Revives a fainted Pokémon",
     icon: "💫",
     type: "revive",
@@ -91,7 +92,7 @@ const ITEM_CONFIG = {
   pokeball: {
     name: "Poké Ball",
     key: "pokeball",
-    price: 300,
+    price: 80,
     effect: "Capture wild Pokémon",
     icon: "🔴",
     type: "capture",
@@ -127,6 +128,11 @@ function initializeApp() {
     toastContainer.className = "toast-container";
     document.body.appendChild(toastContainer);
   }
+
+  // For testing marketplace filtering, show game screen and marketplace tab
+  document.getElementById("gameScreen").classList.remove("hidden");
+  document.getElementById("landingPage").classList.add("hidden");
+  switchTab("marketplace");
 }
 
 function setupAuthTabs() {
@@ -2572,10 +2578,10 @@ async function loadMarketplace() {
 
   await sleep(400); // Simulate network latency
 
-  // Get 6 random Gen 1 Pokémon
-  const regularIds = getRandomPokemonIds(6, 150);
-  // Get 1-2 random legendaries
-  const legendaryIds = getRandomLegendaryIds(Math.random() > 0.5 ? 2 : 1);
+  // Get 12 random Gen 1 Pokémon
+  const regularIds = getRandomPokemonIds(12, 150);
+  // Get 3-4 random legendaries
+  const legendaryIds = getRandomLegendaryIds(Math.random() > 0.5 ? 4 : 3);
   const marketIds = [...regularIds, ...legendaryIds];
 
   try {
@@ -2594,6 +2600,37 @@ async function loadMarketplace() {
 
     // Also load the item shop at the bottom
     loadItemsShop();
+
+    // Add filter event listeners
+    const filterButtons = document.querySelectorAll(".filter-btn");
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        const filter = button.dataset.filter;
+
+        // Remove active class from all buttons
+        filterButtons.forEach((btn) => btn.classList.remove("active"));
+
+        // Add active to clicked button
+        button.classList.add("active");
+
+        // Filter cards
+        const cards = document.querySelectorAll(".market-card");
+        cards.forEach((card) => {
+          const rarity = card.dataset.rarity;
+          let show = false;
+
+          if (filter === "all") {
+            show = true;
+          } else if (filter === "uncommon") {
+            show = rarity === "uncommon" || rarity === "very-rare";
+          } else {
+            show = rarity === filter;
+          }
+
+          card.style.display = show ? "block" : "none";
+        });
+      });
+    });
   } catch (error) {
     console.error("Error loading marketplace:", error);
     loading.innerHTML =
@@ -2612,8 +2649,10 @@ function getRandomLegendaryIds(count) {
 }
 
 function createMarketCard(pokemon, isLegendary = false) {
+  const rarity = getPokemonRarity(pokemon);
   const card = document.createElement("div");
-  card.className = `market-card ${isLegendary ? "legendary" : ""}`;
+  card.className = `market-card ${rarity}`;
+  card.dataset.rarity = rarity;
 
   const types = pokemon.types
     .map(

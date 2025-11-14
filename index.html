@@ -84,16 +84,11 @@
     </div>
 
     <!-- Game Screen -->
-    <div class="container hidden" id="gameScreen">
+    <div class="container" id="gameScreen">
       <div class="header">
         <h1>⚡ PokéChain Arena ⚡</h1>
         <p>Welcome, <span id="playerTrainerName">Trainer</span>!</p>
         <div class="player-stats"></div>
-        <div style="margin-top: 10px">
-          <button id="logoutBtn" class="btn btn-secondary btn-small">
-            Logout
-          </button>
-        </div>
       </div>
 
       <!-- Navigation Tabs -->
@@ -103,6 +98,7 @@
         <div class="nav-tab" data-tab="marketplace">Marketplace</div>
         <div class="nav-tab" data-tab="leaderboard">Leaderboard</div>
         <div class="nav-tab" data-tab="achievements">Achievements</div>
+        <div class="nav-tab" data-tab="settings">Settings</div>
       </div>
 
       <!-- Starter Tab -->
@@ -190,6 +186,19 @@
       <!-- Marketplace Tab -->
       <div id="marketplaceTab" class="tab-content hidden">
         <h2>Marketplace</h2>
+        <div class="marketplace-filters">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="common">Common</button>
+          <button class="filter-btn" data-filter="uncommon">
+            Uncommon/Rare
+          </button>
+          <button class="filter-btn" data-filter="very-rare">Very Rare</button>
+          <button class="filter-btn" data-filter="legendary">Legendary</button>
+          <button class="filter-btn" data-filter="mythical">Mythical</button>
+          <button class="filter-btn" data-filter="ultra-beast">
+            Ultra Beast
+          </button>
+        </div>
         <div id="marketLoading" class="loading">
           <div class="spinner"></div>
           <p style="margin-top: 10px">Loading marketplace...</p>
@@ -222,7 +231,54 @@
         <h2>Achievements</h2>
         <div id="achievementsGrid" class="achievements-grid"></div>
       </div>
+
+      <!-- Settings Tab -->
+      <div id="settingsTab" class="tab-content hidden">
+        <h2>Settings</h2>
+        <div class="settings-content">
+          <div class="setting-group">
+            <h3>Audio</h3>
+            <div class="audio-controls">
+              <label for="musicToggle">Background Music:</label>
+              <button id="musicToggle" class="btn btn-secondary btn-small">
+                🔊 On
+              </button>
+              <div class="volume-control">
+                <label for="volumeSlider">Volume:</label>
+                <input
+                  type="range"
+                  id="volumeSlider"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value="0.5"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="setting-group">
+            <h3>Account</h3>
+            <button id="logoutBtn" class="btn btn-danger">Logout</button>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- Audio elements for background music -->
+    <audio id="landingMusic" loop>
+      <source
+        src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
+        type="audio/wav"
+      />
+      <!-- Fallback: You can replace with actual Pokémon music URLs -->
+    </audio>
+    <audio id="battleMusic" loop>
+      <source
+        src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav"
+        type="audio/wav"
+      />
+      <!-- Fallback: You can replace with actual battle music URLs -->
+    </audio>
 
     <!-- Scripts: order matters -->
     <script src="pokeapi.js"></script>
