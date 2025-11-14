@@ -16,6 +16,8 @@
   --text-dark: #0f3460;
   --success: #00d2ff;
   --danger: #ff6b6b;
+  --warning: #ffa726;
+  --xp-color: #9c27b0;
 }
 
 body {
@@ -67,6 +69,16 @@ body::before {
   border-radius: 20px;
   margin-bottom: 30px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.header::before {
+  content: "⚡";
+  position: absolute;
+  font-size: 4rem;
+  opacity: 0.1;
+  animation: float 3s ease-in-out infinite;
 }
 
 .header h1 {
@@ -78,6 +90,68 @@ body::before {
 .header p {
   font-size: 1.2rem;
   opacity: 0.9;
+}
+
+.player-stats {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.stat-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 15px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  border: 1px solid rgba(255, 222, 0, 0.3);
+}
+
+/* ==================== TOAST NOTIFICATIONS ==================== */
+
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  max-width: 400px;
+}
+
+.toast {
+  background: var(--card-bg);
+  border-left: 4px solid var(--primary-yellow);
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  animation: slideInRight 0.3s ease-out;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toast.success {
+  border-left-color: var(--success);
+}
+
+.toast.error {
+  border-left-color: var(--danger);
+}
+
+.toast.warning {
+  border-left-color: var(--warning);
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 /* ==================== LOGIN SCREEN ==================== */
@@ -124,6 +198,26 @@ body::before {
   text-transform: uppercase;
   letter-spacing: 1px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  transform: translate(-50%, -50%);
+}
+
+.btn:active::after {
+  width: 100%;
+  height: 100%;
 }
 
 .btn-primary {
@@ -166,6 +260,11 @@ body::before {
   transform: none;
 }
 
+.btn-small {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+}
+
 /* ==================== STARTER SELECTION ==================== */
 
 .starter-selection {
@@ -187,6 +286,7 @@ body::before {
   transition: all 0.3s ease;
   border: 3px solid transparent;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
 
 .pokemon-card:hover {
@@ -209,6 +309,11 @@ body::before {
   height: 150px;
   object-fit: contain;
   filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.5));
+  transition: transform 0.3s ease;
+}
+
+.pokemon-card:hover img {
+  transform: scale(1.1);
 }
 
 .pokemon-card h3 {
@@ -257,15 +362,33 @@ body::before {
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: bold;
+  position: relative;
 }
 
 .nav-tab:hover {
   border-color: var(--primary-yellow);
+  transform: translateY(-2px);
 }
 
 .nav-tab.active {
   background: var(--primary-yellow);
   color: var(--text-dark);
+  box-shadow: 0 5px 15px rgba(255, 222, 0, 0.4);
+}
+
+.nav-tab-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--danger);
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* ==================== ARENA BATTLE ==================== */
@@ -281,6 +404,8 @@ body::before {
   display: block;
   margin-bottom: 10px;
   font-weight: bold;
+  color: var(--text-light);
+  font-size: 1.1rem;
 }
 
 .battle-setup input,
@@ -290,9 +415,15 @@ body::before {
   border-radius: 10px;
   border: 2px solid rgba(255, 222, 0, 0.3);
   background: rgba(255, 255, 255, 0.1);
-  color: white;
+  color: var(--text-light);
   font-size: 1rem;
   margin-bottom: 20px;
+}
+
+.battle-setup select option {
+  background: var(--card-bg);
+  color: var(--text-light);
+  padding: 10px;
 }
 
 .battle-arena {
@@ -314,6 +445,15 @@ body::before {
   padding: 20px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 15px;
+  position: relative;
+}
+
+.battle-pokemon.player {
+  border: 2px solid var(--success);
+}
+
+.battle-pokemon.opponent {
+  border: 2px solid var(--danger);
 }
 
 .battle-pokemon img {
@@ -321,6 +461,14 @@ body::before {
   height: 200px;
   object-fit: contain;
   animation: float 3s ease-in-out infinite;
+}
+
+.battle-pokemon.attacking img {
+  animation: attackAnimation 0.5s ease-in-out;
+}
+
+.battle-pokemon.taking-damage img {
+  animation: damageAnimation 0.5s ease-in-out;
 }
 
 @keyframes float {
@@ -333,6 +481,31 @@ body::before {
   }
 }
 
+@keyframes attackAnimation {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-20px);
+  }
+  50% {
+    transform: translateX(20px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes damageAnimation {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
 .health-bar {
   width: 100%;
   height: 30px;
@@ -341,6 +514,7 @@ body::before {
   overflow: hidden;
   margin: 15px 0;
   border: 2px solid rgba(255, 255, 255, 0.2);
+  position: relative;
 }
 
 .health-fill {
@@ -352,6 +526,41 @@ body::before {
   justify-content: center;
   font-weight: bold;
   font-size: 0.9rem;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.xp-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 5px 0;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--xp-color) 0%, #e91e63 100%);
+  transition: width 0.5s ease;
+}
+
+.level-badge {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: var(--primary-yellow);
+  color: var(--text-dark);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.9rem;
+  border: 2px solid var(--text-dark);
 }
 
 .battle-actions {
@@ -359,6 +568,28 @@ body::before {
   gap: 15px;
   justify-content: center;
   flex-wrap: wrap;
+}
+
+.move-btn {
+  padding: 12px 20px;
+  background: var(--primary-blue);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.move-btn:hover {
+  background: var(--primary-red);
+  transform: translateY(-2px);
+}
+
+.move-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .battle-log {
@@ -375,6 +606,73 @@ body::before {
   padding: 8px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 5px;
+  animation: slideInUp 0.3s ease-out;
+}
+
+.battle-log .critical {
+  color: var(--warning);
+  font-weight: bold;
+}
+
+.battle-log .super-effective {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.battle-log .not-very-effective {
+  color: #f44336;
+  font-weight: bold;
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ==================== INVENTORY/TEAM MANAGEMENT ==================== */
+
+.team-management {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.team-member {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.team-member:hover {
+  border-color: var(--primary-yellow);
+}
+
+.team-member.active {
+  border-color: var(--success);
+  background: rgba(0, 210, 255, 0.1);
+}
+
+.team-member.fainted {
+  opacity: 0.5;
+  border-color: var(--danger);
 }
 
 /* ==================== MARKETPLACE ==================== */
@@ -407,6 +705,40 @@ body::before {
   border-radius: 20px;
   font-weight: bold;
   margin: 10px 0;
+}
+
+/* ==================== ACHIEVEMENTS ==================== */
+
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.achievement-card {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 10px;
+  border-left: 4px solid var(--primary-yellow);
+}
+
+.achievement-card.locked {
+  opacity: 0.5;
+  border-left-color: #666;
+}
+
+.achievement-card.unlocked {
+  border-left-color: var(--success);
+  background: linear-gradient(
+    135deg,
+    var(--card-bg) 0%,
+    rgba(0, 210, 255, 0.1) 100%
+  );
+}
+
+.achievement-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
 }
 
 /* ==================== LEADERBOARD ==================== */
@@ -481,6 +813,19 @@ body::before {
 
 .hidden {
   display: none !important;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* ==================== TYPE BADGES ==================== */
@@ -579,5 +924,257 @@ body::before {
   .btn {
     padding: 12px 30px;
     font-size: 1rem;
+  }
+
+  .player-stats {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* Add to styles.css */
+
+/* ==================== LANDING PAGE STYLES ==================== */
+
+.landing-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--dark-bg) 0%, #0f3460 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.landing-container {
+  max-width: 1200px;
+  width: 100%;
+}
+
+.landing-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.landing-header h1 {
+  font-size: 4rem;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+  margin-bottom: 10px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-red) 0%,
+    var(--primary-yellow) 50%,
+    var(--primary-blue) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.landing-header p {
+  font-size: 1.5rem;
+  opacity: 0.9;
+}
+
+.landing-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 50px;
+  align-items: start;
+}
+
+.auth-container {
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 222, 0, 0.3);
+}
+
+.auth-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 15px;
+  background: none;
+  border: none;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+}
+
+.auth-tab.active {
+  border-bottom-color: var(--primary-yellow);
+  color: var(--primary-yellow);
+}
+
+.auth-form h3 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: var(--primary-yellow);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 2px solid rgba(255, 222, 0, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+}
+
+.features-showcase {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.feature-card {
+  background: var(--card-bg);
+  padding: 25px;
+  border-radius: 15px;
+  text-align: center;
+  border: 2px solid rgba(255, 222, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary-yellow);
+  box-shadow: 0 10px 30px rgba(255, 222, 0, 0.3);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.feature-card h4 {
+  margin-bottom: 10px;
+  color: var(--primary-yellow);
+}
+
+/* ==================== BATTLE ENHANCEMENTS ==================== */
+
+.battle-controls {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.try-again-btn {
+  background: var(--primary-yellow);
+  color: var(--text-dark);
+}
+
+.try-again-btn:hover {
+  background: #ffed4a;
+  transform: translateY(-2px);
+}
+
+/* ==================== ITEMS SHOP ==================== */
+
+.items-shop {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 20px;
+}
+
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.item-card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.item-card:hover {
+  border-color: var(--primary-yellow);
+}
+
+.item-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.item-price {
+  color: var(--primary-yellow);
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+/* ==================== LEGENDARY POKÉMON STYLES ==================== */
+
+.legendary-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: linear-gradient(135deg, #ffd700 0%, #ff6b00 100%);
+  color: var(--text-dark);
+  padding: 5px 10px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  z-index: 1;
+}
+
+.market-card.legendary {
+  border-color: #ffd700;
+  position: relative;
+}
+
+.market-card.legendary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.1) 0%,
+    transparent 50%
+  );
+  border-radius: 15px;
+  pointer-events: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .landing-content {
+    grid-template-columns: 1fr;
+  }
+
+  .features-showcase {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-header h1 {
+    font-size: 2.5rem;
   }
 }

@@ -1,156 +1,230 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>PokéChain Arena</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="container">
-      <!-- Header -->
-      <div class="header">
-        <h1>⚡ PokéChain Arena ⚡</h1>
-        <p>Battle, Trade, and Collect on the Blockchain</p>
-      </div>
-
-      <!-- Login Screen -->
-      <div id="loginScreen" class="login-screen">
-        <div class="login-card">
-          <h2>Welcome, Trainer!</h2>
-          <p>Connect your MetaMask wallet to begin your journey</p>
-          <div class="wallet-status" id="walletStatus">
-            <p>🦊 MetaMask not connected</p>
-          </div>
-          <button class="btn btn-primary" id="connectWalletBtn">
-            Connect MetaMask
-          </button>
-        </div>
-      </div>
-
-      <!-- Main Game Screen -->
-      <div id="gameScreen" class="hidden">
-        <!-- Navigation -->
-        <div class="nav-tabs">
-          <div class="nav-tab active" data-tab="starter">Choose Starter</div>
-          <div class="nav-tab" data-tab="arena">Battle Arena</div>
-          <div class="nav-tab" data-tab="marketplace">Marketplace</div>
-          <div class="nav-tab" data-tab="leaderboard">Leaderboard</div>
+    <div class="landing-page" id="landingPage">
+      <div class="landing-container">
+        <div class="landing-header">
+          <h1>⚡ PokéChain Arena ⚡</h1>
+          <p>Battle, Trade, and Collect Pokémon on the Blockchain</p>
         </div>
 
-        <!-- Starter Selection -->
-        <div id="starterTab" class="tab-content">
-          <div class="starter-selection">
-            <h2>Choose Your Starter Pokémon</h2>
-            <div class="loading" id="starterLoading">
-              <div class="spinner"></div>
-              <p>Loading Pokémon...</p>
+        <div class="landing-content">
+          <!-- Auth / Wallet -->
+          <div class="auth-container">
+            <div class="auth-tabs">
+              <button class="auth-tab active" data-tab="login">Login</button>
+              <button class="auth-tab" data-tab="register">Register</button>
             </div>
-            <div class="starter-grid hidden" id="starterGrid"></div>
-            <button
-              class="btn btn-secondary hidden"
-              id="confirmStarterBtn"
-              style="margin-top: 30px"
-            >
-              Confirm Selection
-            </button>
-          </div>
-        </div>
 
-        <!-- Battle Arena -->
-        <div id="arenaTab" class="tab-content hidden">
-          <div class="battle-setup" id="battleSetup">
-            <h2>Battle Arena Setup</h2>
-            <label for="opponentCount">Number of Opponents (1-5):</label>
-            <input type="number" id="opponentCount" min="1" max="5" value="1" />
-            <button class="btn btn-primary" id="startBattleBtn">
-              Start Battle
-            </button>
-          </div>
-
-          <div class="battle-arena hidden" id="battleArena">
-            <h2>Round <span id="roundNumber">1</span></h2>
-            <div class="battle-field">
-              <div class="battle-pokemon player-side">
-                <h3 id="playerName">Your Pokémon</h3>
-                <div class="pokemon-sprite-container">
-                  <img id="playerSprite" src="" alt="Your Pokémon" />
-                  <div class="attack-animation" id="playerAttackAnim"></div>
-                </div>
-                <div class="health-bar">
-                  <div
-                    class="health-fill"
-                    id="playerHealth"
-                    style="width: 100%"
-                  >
-                    100/100
-                  </div>
-                </div>
-                <div id="playerTypes"></div>
-                <div id="playerLevel" class="level-badge">Lv. 5</div>
+            <div id="loginForm" class="auth-form">
+              <h3>Welcome Back, Trainer!</h3>
+              <div id="walletStatus" class="wallet-status">
+                🦊 Connect your MetaMask wallet
               </div>
-              <div class="battle-pokemon opponent-side">
-                <h3 id="opponentName">Opponent</h3>
-                <div class="pokemon-sprite-container">
-                  <img id="opponentSprite" src="" alt="Opponent" />
-                  <div class="attack-animation" id="opponentAttackAnim"></div>
-                </div>
-                <div class="health-bar">
-                  <div
-                    class="health-fill"
-                    id="opponentHealth"
-                    style="width: 100%"
-                  >
-                    100/100
-                  </div>
-                </div>
-                <div id="opponentTypes"></div>
-                <div id="opponentLevel" class="level-badge">Lv. 5</div>
+              <button
+                id="connectWalletBtn"
+                class="btn btn-primary"
+                style="width: 100%"
+              >
+                Connect MetaMask & Login
+              </button>
+            </div>
+
+            <div id="registerForm" class="auth-form hidden">
+              <h3>Join the Arena!</h3>
+              <p>Create your trainer account and connect your wallet</p>
+              <div class="form-group">
+                <label for="trainerName">Trainer Name:</label>
+                <input id="trainerName" type="text" placeholder="e.g. Red" />
               </div>
+              <div id="registerWalletStatus" class="wallet-status">
+                🦊 Connect MetaMask to register
+              </div>
+              <button
+                id="registerWalletBtn"
+                class="btn btn-secondary"
+                style="width: 100%"
+              >
+                Connect MetaMask & Register
+              </button>
             </div>
-            <div class="battle-actions" id="battleActions">
-              <div class="moves-grid" id="movesGrid"></div>
-              <button class="btn btn-secondary" id="runBtn">🏃 Run</button>
+          </div>
+
+          <!-- Features -->
+          <div class="features-showcase">
+            <div class="feature-card">
+              <div class="feature-icon">⚔️</div>
+              <h4>Battle Arena</h4>
+              <p>Challenge other trainers in epic Pokémon battles</p>
             </div>
-            <div class="battle-log" id="battleLog"></div>
-          </div>
-        </div>
-
-        <!-- Marketplace -->
-        <div id="marketplaceTab" class="tab-content hidden">
-          <h2>Pokémon Marketplace</h2>
-          <p style="text-align: center; opacity: 0.8; margin-bottom: 20px">
-            Buy and sell Pokémon using blockchain technology
-          </p>
-          <div class="loading" id="marketLoading">
-            <div class="spinner"></div>
-            <p>Loading marketplace...</p>
-          </div>
-          <div class="marketplace-grid hidden" id="marketplaceGrid"></div>
-        </div>
-
-        <!-- Leaderboard -->
-        <div id="leaderboardTab" class="tab-content hidden">
-          <h2>Top Trainers</h2>
-          <div class="leaderboard-table">
-            <table>
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Trainer</th>
-                  <th>Wins</th>
-                  <th>Pokémon Owned</th>
-                  <th>Win Rate</th>
-                </tr>
-              </thead>
-              <tbody id="leaderboardBody"></tbody>
-            </table>
+            <div class="feature-card">
+              <div class="feature-icon">🛒</div>
+              <h4>Marketplace</h4>
+              <p>Buy and sell rare Pokémon using blockchain</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🏆</div>
+              <h4>Leaderboards</h4>
+              <p>Compete for the top spot in global rankings</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🌟</div>
+              <h4>Legendary Pokémon</h4>
+              <p>Collect rare and powerful legendary Pokémon</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Scripts - Load in correct order -->
+    <!-- Game Screen -->
+    <div class="container hidden" id="gameScreen">
+      <div class="header">
+        <h1>⚡ PokéChain Arena ⚡</h1>
+        <p>Welcome, <span id="playerTrainerName">Trainer</span>!</p>
+        <div class="player-stats"></div>
+        <div style="margin-top: 10px">
+          <button id="logoutBtn" class="btn btn-secondary btn-small">
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <div class="nav-tab active" data-tab="starter">Starter</div>
+        <div class="nav-tab" data-tab="arena">Battle Arena</div>
+        <div class="nav-tab" data-tab="marketplace">Marketplace</div>
+        <div class="nav-tab" data-tab="leaderboard">Leaderboard</div>
+        <div class="nav-tab" data-tab="achievements">Achievements</div>
+      </div>
+
+      <!-- Starter Tab -->
+      <div id="starterTab" class="tab-content">
+        <div class="starter-selection">
+          <h2>Choose Your Starter Pokémon</h2>
+
+          <!-- Loading placeholder required by pokeapi.js -->
+          <div id="starterLoading" class="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px">Loading starter Pokémon...</p>
+          </div>
+
+          <!-- Grid required by pokeapi.js -->
+          <div id="starterGrid" class="starter-grid hidden"></div>
+
+          <div style="text-align: center; margin-top: 20px">
+            <button id="confirmStarterBtn" class="btn btn-primary hidden">
+              Confirm Starter
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Arena Tab -->
+      <div id="arenaTab" class="tab-content hidden">
+        <h2>Battle Arena</h2>
+
+        <div class="battle-setup" id="battleSetup">
+          <label for="opponentCount">Number of Opponents (1-5):</label>
+          <select id="opponentCount">
+            <option value="1">1 Opponent</option>
+            <option value="2">2 Opponents</option>
+            <option value="3">3 Opponents</option>
+            <option value="4">4 Opponents</option>
+            <option value="5">5 Opponents</option>
+          </select>
+          <button id="startBattleBtn" class="btn btn-primary">
+            Start Battle
+          </button>
+        </div>
+
+        <div class="battle-arena hidden" id="battleArena">
+          <div class="battle-field">
+            <div class="battle-pokemon player">
+              <div class="level-badge" id="playerLevelBadge">Lv</div>
+              <img id="playerSprite" alt="Player Pokémon" />
+              <div id="playerName"></div>
+              <div class="health-bar">
+                <div class="health-fill" id="playerHealth" style="width: 100%">
+                  0/0
+                </div>
+              </div>
+              <div id="playerTypes"></div>
+            </div>
+            <div class="battle-pokemon opponent">
+              <div class="level-badge" id="opponentLevelBadge">Lv</div>
+              <img id="opponentSprite" alt="Opponent Pokémon" />
+              <div id="opponentName"></div>
+              <div class="health-bar">
+                <div
+                  class="health-fill"
+                  id="opponentHealth"
+                  style="width: 100%"
+                >
+                  0/0
+                </div>
+              </div>
+              <div id="opponentTypes"></div>
+            </div>
+          </div>
+
+          <div class="battle-actions" id="battleActions">
+            <button id="runBtn" class="btn btn-danger">Run</button>
+          </div>
+
+          <div class="battle-controls">
+            <div>Round: <span id="roundNumber">1</span></div>
+          </div>
+
+          <div class="battle-log" id="battleLog"></div>
+        </div>
+      </div>
+
+      <!-- Marketplace Tab -->
+      <div id="marketplaceTab" class="tab-content hidden">
+        <h2>Marketplace</h2>
+        <div id="marketLoading" class="loading">
+          <div class="spinner"></div>
+          <p style="margin-top: 10px">Loading marketplace...</p>
+        </div>
+        <div id="marketplaceGrid" class="marketplace-grid hidden"></div>
+      </div>
+
+      <!-- Leaderboard Tab -->
+      <div id="leaderboardTab" class="tab-content hidden">
+        <h2>Leaderboard</h2>
+        <div class="leaderboard-table">
+          <table>
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Trainer</th>
+                <th>Level</th>
+                <th>Wins</th>
+                <th>Pokémon</th>
+                <th>Win Rate</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Achievements Tab -->
+      <div id="achievementsTab" class="tab-content hidden">
+        <h2>Achievements</h2>
+        <div id="achievementsGrid" class="achievements-grid"></div>
+      </div>
+    </div>
+
+    <!-- Scripts: order matters -->
     <script src="pokeapi.js"></script>
     <script src="web3.js"></script>
     <script src="main.js"></script>
