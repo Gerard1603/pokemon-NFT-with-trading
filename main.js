@@ -418,6 +418,20 @@ function setupEventListeners() {
   const runBtn = document.getElementById("runBtn");
   if (runBtn) runBtn.addEventListener("click", runFromBattle);
 
+  // Progress management event listeners
+  const exportSaveBtn = document.getElementById("exportSaveBtn");
+  if (exportSaveBtn) exportSaveBtn.addEventListener("click", exportSaveData);
+
+  const importSaveBtn = document.getElementById("importSaveBtn");
+  if (importSaveBtn) importSaveBtn.addEventListener("click", importSaveData);
+
+  const resetProgressBtn = document.getElementById("resetProgressBtn");
+  if (resetProgressBtn)
+    resetProgressBtn.addEventListener("click", resetProgress);
+
+  const deleteAllBtn = document.getElementById("deleteAllBtn");
+  if (deleteAllBtn) deleteAllBtn.addEventListener("click", deleteAllProgress);
+
   document.addEventListener("keydown", handleKeyboardShortcuts);
 }
 
@@ -479,7 +493,11 @@ function loadGameState() {
 function saveGameState() {
   try {
     // Don't save transient state like the current battle
-    const stateToSave = { ...gameState, currentBattle: null };
+    const stateToSave = {
+      ...gameState,
+      currentBattle: null,
+      timestamp: Date.now(),
+    };
     localStorage.setItem("pokechain_arena_save", JSON.stringify(stateToSave));
     console.log("Game state saved.");
   } catch (error) {
@@ -1438,19 +1456,11 @@ async function handlePlayerFainted() {
 
   if (alivePokemon.length > 0) {
     addBattleLog(`Choose your next Pokémon!`);
-    // Disable move/run buttons, enable team switching
-    document
-      .querySelectorAll("#battleActions button")
-      .forEach((btn) => (btn.disabled = true));
-    document.querySelectorAll(".team-member").forEach((m) => {
-      m.style.pointerEvents = "auto";
-      if (!m.classList.contains("fainted")) {
-        m.style.cursor = "pointer";
-        // Add a visual cue
-        m.style.boxShadow = "0 0 15px var(--success)";
-      }
-    });
-    // The battle will resume when the user clicks a new Pokémon (in switchActivePokemon)
+    // Show switch modal instead of enabling team switching
+    await showSwitchModal();
+    // After switching, opponent's turn
+    await sleep(1000);
+    await opponentTurn();
   } else {
     // All Pokémon fainted, show game over screen with revival options
     addBattleLog(`💀 All your Pokémon have fainted!`);
@@ -3004,6 +3014,194 @@ function showGameScreen() {
 
 console.log("PokéChain Arena loaded successfully!");
 console.log("Game state initialized:", gameState);
+
+// Progress management functions
+function exportSaveData() {
+  try {
+    const saveData = JSON.stringify(gameState, null, 2);
+    const blob = new Blob([saveData], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `pokechain_arena_save_${
+      new Date().toISOString().split("T")[0]
+    }.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showNotification("Save data exported successfully!", "success");
+  } catch (error) {
+    console.error("Export error:", error);
+    showNotification("Failed to export save data.", "error");
+  }
+}
+
+function importSaveData() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = ".json";
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedState = JSON.parse(event.target.result);
+
+        // Validate imported data
+        if (!importedState.walletAddress || !importedState.trainerName) {
+          throw new Error("Invalid save file format");
+        }
+
+        // Load the imported state
+        Object.assign(gameState, importedState);
+        saveGameState();
+        showNotification("Save data imported successfully!", "success");
+
+        // Refresh UI
+        updatePlayerStatsDisplay();
+        updateTeamDisplay();
+        loadLeaderboard();
+        loadAchievements();
+
+        // Switch to appropriate tab
+        if (gameState.playerPokemon) {
+          switchTab("arena");
+        } else {
+          switchTab("starter");
+        }
+      } catch (error) {
+        console.error("Import error:", error);
+        showNotification(
+          "Failed to import save data. Invalid file format.",
+          "error"
+        );
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function resetProgress() {
+  if (
+    !confirm(
+      "Are you sure you want to reset all progress? This cannot be undone!"
+    )
+  ) {
+    return;
+  }
+
+  // Reset gameState to default
+  Object.assign(gameState, {
+    walletConnected: gameState.walletConnected, // Keep wallet connection
+    walletAddress: gameState.walletAddress, // Keep wallet address
+    trainerName: null,
+    isRegistered: false,
+    selectedStarter: null,
+    playerPokemon: null,
+    playerTeam: { active: 0, pokemon: [] },
+    currentBattle: null,
+    wins: 0,
+    losses: 0,
+    pokemonOwned: [],
+    battleHistory: [],
+    achievements: {
+      FIRST_WIN: false,
+      POKEMON_COLLECTOR: false,
+      BATTLE_MASTER: false,
+      FIRST_CATCH: false,
+      LEGENDARY_OWNER: false,
+    },
+    xp: 0,
+    level: 1,
+    currency: 1000,
+    battlePoints: 0,
+    dailyQuests: [],
+    lastPlayed: null,
+    playerInventory: { potions: 0, superPotions: 0, revives: 0, pokeballs: 0 },
+    aiBattles: [],
+    freeReviveUsed: false,
+  });
+
+  saveGameState();
+  showNotification("Progress reset successfully!", "info");
+
+  // Refresh UI
+  updatePlayerStatsDisplay();
+  updateTeamDisplay();
+  loadLeaderboard();
+  loadAchievements();
+
+  // Switch to landing page
+  const game = document.getElementById("gameScreen");
+  const landing = document.getElementById("landingPage");
+  if (game) game.classList.add("hidden");
+  if (landing) landing.classList.remove("hidden");
+  switchAuthTab("login");
+}
+
+function deleteAllProgress() {
+  if (
+    !confirm(
+      "Are you sure you want to delete ALL progress? This will clear localStorage and cannot be undone!"
+    )
+  ) {
+    return;
+  }
+
+  // Clear localStorage
+  localStorage.removeItem("pokechain_arena_save");
+
+  // Reset gameState completely
+  Object.assign(gameState, {
+    walletConnected: false,
+    walletAddress: null,
+    trainerName: null,
+    isRegistered: false,
+    selectedStarter: null,
+    playerPokemon: null,
+    playerTeam: { active: 0, pokemon: [] },
+    currentBattle: null,
+    wins: 0,
+    losses: 0,
+    pokemonOwned: [],
+    battleHistory: [],
+    achievements: {
+      FIRST_WIN: false,
+      POKEMON_COLLECTOR: false,
+      BATTLE_MASTER: false,
+      FIRST_CATCH: false,
+      LEGENDARY_OWNER: false,
+    },
+    xp: 0,
+    level: 1,
+    currency: 1000,
+    battlePoints: 0,
+    dailyQuests: [],
+    lastPlayed: null,
+    playerInventory: { potions: 0, superPotions: 0, revives: 0, pokeballs: 0 },
+    aiBattles: [],
+    freeReviveUsed: false,
+  });
+
+  showNotification("All progress deleted!", "warning");
+
+  // Refresh UI
+  updatePlayerStatsDisplay();
+  updateTeamDisplay();
+  loadLeaderboard();
+  loadAchievements();
+
+  // Switch to landing page
+  const game = document.getElementById("gameScreen");
+  const landing = document.getElementById("landingPage");
+  if (game) game.classList.add("hidden");
+  if (landing) landing.classList.remove("hidden");
+  switchAuthTab("login");
+}
 
 // Make key functions globally available for HTML onclick=""
 window.switchTab = switchTab;

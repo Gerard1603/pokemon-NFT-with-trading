@@ -142,41 +142,47 @@
         </div>
 
         <div class="battle-arena hidden" id="battleArena">
-          <div class="battle-field">
-            <div class="battle-pokemon player">
-              <div class="level-badge" id="playerLevelBadge">Lv</div>
-              <img id="playerSprite" alt="Player Pokémon" />
-              <div id="playerName"></div>
-              <div class="health-bar">
-                <div class="health-fill" id="playerHealth" style="width: 100%">
-                  0/0
+          <div class="battle-main">
+            <div class="battle-field">
+              <div class="battle-pokemon player">
+                <div class="level-badge" id="playerLevelBadge">Lv</div>
+                <img id="playerSprite" alt="Player Pokémon" />
+                <div id="playerName"></div>
+                <div class="health-bar">
+                  <div
+                    class="health-fill"
+                    id="playerHealth"
+                    style="width: 100%"
+                  >
+                    0/0
+                  </div>
                 </div>
+                <div id="playerTypes"></div>
               </div>
-              <div id="playerTypes"></div>
-            </div>
-            <div class="battle-pokemon opponent">
-              <div class="level-badge" id="opponentLevelBadge">Lv</div>
-              <img id="opponentSprite" alt="Opponent Pokémon" />
-              <div id="opponentName"></div>
-              <div class="health-bar">
-                <div
-                  class="health-fill"
-                  id="opponentHealth"
-                  style="width: 100%"
-                >
-                  0/0
+              <div class="battle-pokemon opponent">
+                <div class="level-badge" id="opponentLevelBadge">Lv</div>
+                <img id="opponentSprite" alt="Opponent Pokémon" />
+                <div id="opponentName"></div>
+                <div class="health-bar">
+                  <div
+                    class="health-fill"
+                    id="opponentHealth"
+                    style="width: 100%"
+                  >
+                    0/0
+                  </div>
                 </div>
+                <div id="opponentTypes"></div>
               </div>
-              <div id="opponentTypes"></div>
             </div>
-          </div>
 
-          <div class="battle-actions" id="battleActions">
-            <button id="runBtn" class="btn btn-danger">Run</button>
-          </div>
+            <div class="battle-actions" id="battleActions">
+              <button id="runBtn" class="btn btn-danger">Run</button>
+            </div>
 
-          <div class="battle-controls">
-            <div>Round: <span id="roundNumber">1</span></div>
+            <div class="battle-controls">
+              <div>Round: <span id="roundNumber">1</span></div>
+            </div>
           </div>
 
           <div class="battle-log" id="battleLog"></div>
@@ -253,6 +259,62 @@
                   step="0.1"
                   value="0.5"
                 />
+              </div>
+            </div>
+          </div>
+          <div class="setting-group">
+            <h3>Progress Management</h3>
+            <div class="progress-status">
+              <div class="status-info">
+                <div class="status-item">
+                  <span class="status-label">Save Status:</span>
+                  <span id="saveStatus" class="status-value">Loading...</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label">File Size:</span>
+                  <span id="saveSize" class="status-value">0 KB</span>
+                </div>
+                <div class="status-item">
+                  <span class="status-label">Last Saved:</span>
+                  <span id="lastSaved" class="status-value">Never</span>
+                </div>
+              </div>
+              <div class="game-stats">
+                <div class="stat-item">
+                  <span class="stat-label">Pokémon Owned:</span>
+                  <span id="pokemonCount" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Wins:</span>
+                  <span id="winsCount" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Level:</span>
+                  <span id="playerLevel" class="stat-value">1</span>
+                </div>
+              </div>
+            </div>
+            <div class="progress-actions">
+              <button id="exportSaveBtn" class="btn btn-primary">
+                📤 Export Save Data
+              </button>
+              <button id="importSaveBtn" class="btn btn-secondary">
+                📥 Import Save Data
+              </button>
+            </div>
+            <div class="danger-zone">
+              <h4>⚠️ Danger Zone</h4>
+              <p class="danger-warning">
+                These actions cannot be undone. Make sure to export your save
+                data first.
+              </p>
+              <div class="danger-actions">
+                <button id="resetProgressBtn" class="btn btn-danger">
+                  🔄 Reset Progress
+                </button>
+                <button id="deleteAllBtn" class="btn btn-danger">
+                  🗑️ Delete All Progress
+                </button>
               </div>
             </div>
           </div>
